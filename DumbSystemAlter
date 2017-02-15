@@ -1,0 +1,5 @@
+ALTER DATABASE
+  ADD LOGFILE GROUP 4 ('/u01/app/oracle/oradata/orcl/redo03a.rdo','/u01/app/oracle/oradata/orcl/redo03b.rdo') 
+  SIZE 100M;
+  
+ ALTER SYSTEM SET log_archive_dest_1='LOCATION=/u01/app/oracle/oradata/orcl/';
