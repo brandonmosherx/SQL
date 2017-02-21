@@ -1,0 +1,50 @@
+V$Database desc
+Select * from all_users
+ps -ef | grep pmon
+GRANT RESOURCE TO BRANDON;  
+ORACLE_HOME=/home/app/oracle/product/11.2.0/dbhome_1  
+export ORACLE_HOME  
+export PATH=$ORACLE_HOME/bin:$PATH
+expdp sys/password@orcl schemas=EXPCHINOOK directory=TEST_DIR dumpfile=EXPCHINOOK.dmp logfile=expdpEXPCHINOOK.log
+impdp sys/password@orcl schemas=EXPCHINOOK directory=TEST_DIR dumpfile=EXPCHINOOK.dmp logfile=impdpEXPCHINOOK.log
+SHUTDOWN IMMEDIATE;
+STARTUP;
+lsnrctl START
+v$log a and v$logfile b ( join on a.group# = b.group#: a.group#, a.thread#, a.status, –group status, a.bytes, a.archived, b.member, b.status—member status)
+V$log_history
+SELECT count(1), to_char(first_time,’YYYY:MM:DD:HH24’)
+FROM v$log_history
+GROUP BY to_char(first_time,’YYYY:MM:DD:HH24’) ORDER BY 2;
+LOG_ARCHIVE_DEST_N and LOG_ARCHIVE_FORMAT (init.ora file)
+nautulius ../
+iostat
+/u01/app/oracle/product/11.2.0/db_1/bin/lsnrctl start
+/u01/app/oracle/product/11.2.0/db_1/bin/sqlplus / as sysdba
+sqlplus System@orcl
+sqlplus BRANDON@orcl
+sqlplus sys@orcl
+sqlplus sys@orcl as sysdba
+yum install git
+git config --global user.name "brandonmosherx"
+git config --global user.email "brandonmosher.x@gmail.com"
+git init
+git add README.md
+git commit -m "first commit"
+git remote add origin https://github.com/brandonmosherx/SQL.git
+git clone https://github.com/brandonmosherx/SQL
+./runInstaller
+cd /etc
+gedit rc.local &
+gedit .bash_profile &
+mkdir DBAS2200
+SELECT group#, status, archived, thread#, sequence# from v$log;
+ALTER SYSTEM CHECKPOINT;
+LOG_ARCHIVE_DEST_N and LOG_ARCHIVE_FORMAT
+LOG_ARCHIVE_DEST_1 = ‘location=/u01/oraarch/11g’
+LOG_ARCHIVE_FORMAT= ’11g_%t%s%d.arc’
+shutdown immediate;
+startup mount;
+alter database archivelog;
+alter database open;
+archive log list;
+SPOOL
