@@ -48,3 +48,4 @@ alter database archivelog;
 alter database open;
 archive log list;
 SPOOL
+SELECT table_name FROM dba_tables WHERE OWNER LIKE 'CHINOOK';
