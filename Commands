@@ -49,3 +49,4 @@ alter database open;
 archive log list;
 SPOOL
 SELECT table_name FROM dba_tables WHERE OWNER LIKE 'CHINOOK';
+alter table "ALBUM" disable constraint "SYS_C0011154";
