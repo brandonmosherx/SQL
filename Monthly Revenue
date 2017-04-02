@@ -1,0 +1,14 @@
+
+select to_char(MSDATEPAYED,'W') as "Week Number", SUM(MSHPPRICE) as "Membership Amount", 
+SUM(ts2.PRICEAMOUNT) as "Merchandise Amount", 
+SUM(tp.PRICE) + SUM(oza.PRICE) as "Other Amount"
+from PEARS.T_MEMBER tm
+
+
+FULL JOIN PEARS.T_SALE2 ts2 ON (ts2.TRANSACTDATE = tm.MSDATEPAYED)
+FULL JOIN PEARS.T_PASS tp ON tp.PASSDATE = tm.MSDATEPAYED
+FULL JOIN PEARS."OTHERS" oza ON oza.EVENTDATE = tm.MSDATEPAYED
+
+GROUP BY to_char(MSDATEPAYED,'W')
+
+ORDER BY to_char(MSDATEPAYED,'W') DESC;
