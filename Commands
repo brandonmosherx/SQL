@@ -114,3 +114,115 @@ SELECT table_name FROM dba_tables WHERE OWNER LIKE 'CHINOOK';
 -- Selects a table if it meets the requirements.
 alter table "ALBUM" disable constraint "SYS_C0011154";
 -- disables constraints temporarily
+
+ALTER TABLE Pears.D_Membership
+ADD MemType NUMBER(1) DEFAULT 1 NOT NULL;
+
+ALTER TABLE Pears.D_Merchandise
+ADD MerType NUMBER(1) DEFAULT 2 NOT NULL;
+
+ALTER TABLE Pears.D_Others
+ADD OthType NUMBER(1) DEFAULT 3 NOT NULL;
+
+
+--Reporting Script
+-- Selects the week number, replacing "null" with Total.
+SELECT NVL(to_char(rt.RevDate,'W'), 'Total') as "Week Number",
+	-- Decoding Membership ID Number 1 with weekly sums.
+	NVL(sum(decode(RevType,1,RevAmount)),0) Memberships,
+	-- Decoding Merchandise ID Number 2 with weekly sums.	
+	NVL(sum(decode(RevType,2,RevAmount)),0) Merchandise,
+	-- Decoding Others ID Number 3 with weekly sums.
+	NVL(sum(decode(RevType,3,RevAmount)),0) Other,
+	-- Total of all sums for id's 1 2 and 3.
+	SUM(RevAmount) TOTAL 
+FROM Pears.F_Revenue PARTITION (Jan16) rt
+GROUP BY CUBE(to_char(rt.RevDate,'W'))
+ORDER BY 1;
+
+
+--Creating our transition tables
+
+--Table T_member is created by joining member and membership table on membership id 
+DROP TABLE Pears.T_Member;
+CREATE TABLE Pears.T_Member
+AS SELECT mr.MsDatePayed, mp.MshpPrice
+FROM Pears.Member mr
+JOIN Pears.Membership mp ON (mr.MshpID = mp.MshpID);
+-------------------------------------------------------------
+--Table T_Pass is created by joining one day guest pass and One day pass category
+DROP TABLE Pears.T_Pass;
+CREATE TABLE Pears.T_Pass
+AS SELECT odgp.PassDate, odpc.Price 
+FROM Pears.OneDayGuestPass odgp
+JOIN Pears.OneDayPassCategory odpc ON (odgp.PassCatID = odpc.PassCatID);
+--------------------------------------------------------------
+--Table T_Sale is created by joining tables Sold Via and Merchandise
+DROP TABLE Pears.T_Sale;
+CREATE TABLE Pears.T_Sale
+AS SELECT sv.StrID, sv.Quantity, mer.Price -- price on the table
+FROM Pears.SoldVia sv
+Right JOIN Pears.Merchandise mer ON (sv.MrchID = mer.MrchID);
+--------------------------------------------------------------
+-- Transition table T_Sale_With_Amount with a Amount = (Quantity*Price) column is created
+DROP TABLE Pears.T_Sale_With_Amount;
+CREATE TABLE Pears.T_Sale_With_Amount
+AS SELECT StrID, Round(Price * Quantity) AS Amount --Price or merchPrice
+FROM Pears.T_Sale;
+--------------------------------------------------------------
+
+--Creating our revenue table
+DROP TABLE Pears.F_Revenue;
+CREATE TABLE Pears.F_Revenue (
+	RevID	NUMBER NOT NULL,
+	RevDate	DATE NOT NULL,
+	RevType	NUMBER(1) NOT NULL,
+	RevAmount NUMBER NOT NULL
+)
+--Partitioning Revenue Table by Month
+PARTITION BY RANGE (RevDate)
+(
+PARTITION Jan16 VALUES LESS THAN (TO_DATE('01-Feb-2016','DD-MON-YYYY')),
+PARTITION Feb16 VALUES LESS THAN (TO_DATE('01-Mar-2016','DD-MON-YYYY')),
+PARTITION Mar16 VALUES LESS THAN (TO_DATE('01-Apr-2016','DD-MON-YYYY')),
+PARTITION Apr16 VALUES LESS THAN (TO_DATE('01-May-2016','DD-MON-YYYY')),
+PARTITION May16 VALUES LESS THAN (TO_DATE('01-Jun-2016','DD-MON-YYYY')),
+PARTITION Jun16 VALUES LESS THAN (TO_DATE('01-Jul-2016','DD-MON-YYYY')),
+PARTITION Jul16 VALUES LESS THAN (TO_DATE('01-Aug-2016','DD-MON-YYYY')),
+PARTITION Aug16 VALUES LESS THAN (TO_DATE('01-Sep-2016','DD-MON-YYYY')),
+PARTITION Sep16 VALUES LESS THAN (TO_DATE('01-Oct-2016','DD-MON-YYYY')),
+PARTITION Oct16 VALUES LESS THAN (TO_DATE('01-Nov-2016','DD-MON-YYYY')),
+PARTITION Nov16 VALUES LESS THAN (TO_DATE('01-Dec-2016','DD-MON-YYYY')),
+PARTITION Dec16 VALUES LESS THAN (TO_DATE('01-Jan-2017','DD-MON-YYYY'))
+);
+-- Assigning Primary Key to the RevID column
+ALTER TABLE Pears.F_Revenue
+ADD (CONSTRAINT F_Revenue_pk PRIMARY KEY (RevID)
+);
+--Creating a sequence function to create an auto increment primary key
+
+DROP SEQUENCE Revenue_sequence;
+CREATE SEQUENCE Revenue_sequence;
+
+CREATE OR REPLACE TRIGGER revenue_on_insert
+BEFORE INSERT ON Pears.F_Revenue
+FOR EACH ROW
+BEGIN
+ SELECT Revenue_sequence.nextval
+ INTO :new.RevID
+ FROM dual;
+END;
+/
+
+--Inserting data into revenue table (D standing for dimension)
+INSERT INTO Pears.F_Revenue (RevDate, RevType, RevAmount)
+SELECT MemDate, MemType, MemAmount
+FROM Pears.D_Membership;
+
+INSERT INTO Pears.F_Revenue (RevDate, RevType, RevAmount)
+SELECT MerDate, MerType, MerAmount
+FROM Pears.D_Merchandise;
+
+INSERT INTO Pears.F_Revenue (RevDate, RevType, RevAmount)
+SELECT OthDate, OthType, OthAmount
+FROM Pears.D_Others;
