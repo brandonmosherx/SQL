@@ -1,29 +1,62 @@
 V$Database desc
+-- Describes Database.
 Select * from all_users
+-- Selects everything from all users (listing them.)
 ps -ef | grep pmon
-GRANT RESOURCE TO BRANDON;  
-ORACLE_HOME=/home/app/oracle/product/11.2.0/dbhome_1  
-export ORACLE_HOME  
+-- Checks if the PMON process is running.
+GRANT RESOURCE TO BRANDON;
+-- Grant resource to me :)
+ORACLE_HOME=/home/app/oracle/product/11.2.0/dbhome_1 
+-- Variable path setting for Oracle_Home
+export ORACLE_HOME
+-- Variable path setting for Oracle_Home
 export PATH=$ORACLE_HOME/bin:$PATH
+-- Variable path setting for Oracle_Home
 expdp sys/password@orcl schemas=EXPCHINOOK directory=TEST_DIR dumpfile=EXPCHINOOK.dmp logfile=expdpEXPCHINOOK.log
+-- Exports the EXPCHINOOK directory.
 impdp sys/password@orcl schemas=EXPCHINOOK directory=TEST_DIR dumpfile=EXPCHINOOK.dmp logfile=impdpEXPCHINOOK.log
+-- Imports the EXPCHINOOK directory.
 SHUTDOWN IMMEDIATE;
+-- Shutdown immediately.
 STARTUP;
+-- Starts up the database in a open state.
 lsnrctl START
+-- Starts the listener.
+
 v$log a and v$logfile b ( join on a.group# = b.group#: a.group#, a.thread#, a.status, –group status, a.bytes, a.archived, b.member, b.status—member status)
 V$log_history
+-- Displays log history on "a" and "b" (being theoretical).
+
 SELECT count(1), to_char(first_time,’YYYY:MM:DD:HH24’)
 FROM v$log_history
 GROUP BY to_char(first_time,’YYYY:MM:DD:HH24’) ORDER BY 2;
+
+-- A cleaner way to look at the log history by the most recent.
+
 LOG_ARCHIVE_DEST_N and LOG_ARCHIVE_FORMAT (init.ora file)
+
+-- Log archive destination variable and format variable.
+
 nautulius ../
+
+-- Opens up the file browser at the first directory level.
+
 iostat
+
+--Generic stats for IO on a linux system
+
 /u01/app/oracle/product/11.2.0/db_1/bin/lsnrctl start
 /u01/app/oracle/product/11.2.0/db_1/bin/sqlplus / as sysdba
+
+-- Ways to start the database without a variable path set.
+
 sqlplus System@orcl
 sqlplus BRANDON@orcl
 sqlplus sys@orcl
 sqlplus sys@orcl as sysdba
+
+--login commands.
+
 yum install git
 git config --global user.name "brandonmosherx"
 git config --global user.email "brandonmosher.x@gmail.com"
@@ -32,21 +65,52 @@ git add README.md
 git commit -m "first commit"
 git remote add origin https://github.com/brandonmosherx/SQL.git
 git clone https://github.com/brandonmosherx/SQL
+
+-- Github Install process along with creating a SQL "git".
+
 ./runInstaller
+
+-- generic run installer command (generally with a .sh)
+
 cd /etc
+
+-- navigate to ETC.
+
 gedit rc.local &
 gedit .bash_profile &
+-- Edit the bash profile and rc.local to make them even more useful.
+
 mkdir DBAS2200
+
+-- Make a directory!
+
 SELECT group#, status, archived, thread#, sequence# from v$log;
+
+-- Creates a tabular view from the logs.
+
 ALTER SYSTEM CHECKPOINT;
+
+--Enables checkpoints.
+
 LOG_ARCHIVE_DEST_N and LOG_ARCHIVE_FORMAT
 LOG_ARCHIVE_DEST_1 = ‘location=/u01/oraarch/11g’
 LOG_ARCHIVE_FORMAT= ’11g_%t%s%d.arc’
+
+-- Location and format of the archive files.
+
 shutdown immediate;
+-- Immediate shutdown.
 startup mount;
+-- Starts the database in a MOUNT state.
 alter database archivelog;
+-- Enables ARCHIVELOG.
 alter database open;
+-- Opens the database if it's already running in a lower state
 archive log list;
+-- Deteremines the state of whether the database is in ARCHIVELOG or not.
 SPOOL
+-- Spool to a file.
 SELECT table_name FROM dba_tables WHERE OWNER LIKE 'CHINOOK';
+-- Selects a table if it meets the requirements.
 alter table "ALBUM" disable constraint "SYS_C0011154";
+-- disables constraints temporarily
